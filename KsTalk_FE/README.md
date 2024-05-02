@@ -1,4 +1,5 @@
 # React + TypeScript + Vite
+
 - 快速聊天实时系统FE
 
 Currently, two official plugins are available:
