@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef, ChangeEvent } from "react";
-import "./index.scss";
+import { ChatDTO } from "../dto/chatDTO";
+import "./styles/chat.scss";
 
 const Chat: React.FC = () => {
   const [ws, setWs] = useState<any>(null);
   const urlRef = useRef("ws://109.206.247.99:8224");
-  const [msg, setMsg] = useState({
+  const [msg, setMsg] = useState<ChatDTO>({
     nickname: "a",
     code: 10002,
     content: "null",
