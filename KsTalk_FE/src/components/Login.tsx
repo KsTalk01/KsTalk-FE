@@ -96,14 +96,14 @@ const Login: React.FC = () => {
           field="loginNum"
           required
           rules={[
-            {
-              validator(value, cb) {
-                if (!value) {
-                  return cb("必须填写手机号!📱");
-                } else if (/^1[3456789]\d{9}$/g.test(value)) return cb();
-                else return cb("请输入正确的手机号");
-              },
-            },
+            // {
+            //   validator(value, cb) {
+            //     if (!value) {
+            //       return cb("必须填写手机号!📱");
+            //     } else if (/^1[3456789]\d{9}$/g.test(value)) return cb();
+            //     else return cb("请输入正确的手机号");
+            //   },
+            // },
           ]}>
           <Input placeholder="请输入你的手机号📱/用户名🌐/邮箱📧" maxLength={11} allowClear/>
         </FormItem>
@@ -131,12 +131,14 @@ const Login: React.FC = () => {
                 await form.validate();
                 axios({
                   method: "post",
-                  url: "/api1/user/user/login",
+                  url: "/api1/member/user/login",
                   data: form.getFieldsValue(),
                 })
                   .then((res) => {
-                    console.log(res.data);
-                    // localStorage.setItem("token", res.data.token);
+                    const infos  = res.data
+                    localStorage.setItem("token", JSON.stringify(infos.data.token));
+                    localStorage.setItem("refreshToken", JSON.stringify(infos.data.refreshToken));
+                    localStorage.setItem("imUsers", JSON.stringify(infos.data));
                     Message.success("登陆成功");
                     navigate("/");
                   })

@@ -91,7 +91,7 @@ const Login: React.FC = () => {
                 await form.validate();
                 axios({
                   method: "post",
-                  url: "/api1/user/user/regist",
+                  url: "/api1/member/user/regist",
                   data: form.getFieldsValue(),
                 }).then((res) => {
                   console.log(res)

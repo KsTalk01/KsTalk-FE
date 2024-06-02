@@ -1,5 +1,5 @@
 export interface ChatDTO {
-  nickname: string;
+  username: string;
   code: number;
   content: string;
   target: string;

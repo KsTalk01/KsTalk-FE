@@ -151,9 +151,9 @@ body {
                 .time {
                     font-size: 14px;
                     position: absolute;
-                    top: 16px;
+                    top: 13px;
                     right: 10%;
-                    padding: 0 0 5px 5px;
+                    // padding: 0 0 5px 5px;
                     color: var(--grey);
                     background-color: var(--white);
                 }
@@ -182,6 +182,11 @@ body {
                         display: none;
                     }
                 }
+            }
+            .listNone {
+                border-radius: 8px;
+                border: 5px groove greenyellow;
+                margin-left: 25px;
             }
         }
     }
@@ -213,7 +218,7 @@ body {
             border-style: solid;
             border-color: var(--light);
             height: calc(100% - 48px);
-            justify-content: flex-end;
+            // justify-content: flex-end;
             flex-direction: column;
             &.active-chat {
                 display: block;
@@ -358,6 +363,7 @@ body {
         }
     }
 }
+
 @keyframes slideFromLeft {
     0% {
         margin-left: -200px;
