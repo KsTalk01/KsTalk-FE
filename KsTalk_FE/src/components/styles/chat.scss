@@ -225,11 +225,11 @@ body {
                 display: flex;
                 .bubble {
                     transition-timing-function: cubic-bezier(.4,-.04, 1, 1);
-                    @for $i from 1 through 10 {
-                        &:nth-of-type(#{$i}) {
-                            animation-duration: .15s * $i;
-                        }
-                    }
+                    // @for $i from 1 through 10 {
+                        // &:nth-of-type(#{$i}) {
+                            // animation-duration: .15s * $i;
+                        // }
+                    // }
                 }
             }
         }
@@ -325,6 +325,7 @@ body {
             }
             &.me {
                 float: right;
+                right: 8px;
                 color: var(--dark);
                 background-color: #eceff1;
                 align-self: flex-end;

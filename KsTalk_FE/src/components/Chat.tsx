@@ -1,9 +1,9 @@
 import {
   useState,
   useEffect,
-  useRef,
   ChangeEvent,
   ChangeEventHandler,
+  useRef,
   // MouseEvent,
   // MouseEventHandler,
 } from "react";
@@ -24,10 +24,9 @@ import axios from "axios";
 import { myThrottle } from "@/utils";
 
 const { Meta } = Card;
+const ws = new WebSocket("ws://109.206.247.99:8224");
 
 const Chat: React.FC = () => {
-  const [ws, setWs] = useState<any>(null);
-  const urlRef = useRef("ws://109.206.247.99:8224");
   const [list, setList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [clickedInfos, setClickedInfos] = useState<any>({});
@@ -41,32 +40,9 @@ const Chat: React.FC = () => {
     target: "",
     type: 1,
   });
+  const inputRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
-    const ws = new WebSocket(urlRef.current);
-    setWs(ws);
-    //初始化获取好友列表
-    getUsers();
-  }, []);
-  const handleChange: ChangeEventHandler<HTMLInputElement> = (
-    e: ChangeEvent<HTMLInputElement>
-  ) => {
-    setMsg({
-      ...msg,
-      content: e.target.value,
-      username: JSON.parse(localStorage.getItem("imUsers")!).username,
-      target: clickedInfos?.username,
-    });
-  };
-  const connectWebSocket = () => {
-    ws.send(JSON.stringify(msg));
-  };
-  //   const disconnectWebSocket = () => {
-  //     if (ws) {
-  //       ws.close();
-  //       console.log("WebSocket 主动关闭");
-  //     }
-  //   };
-  if (ws) {
     ws.onopen = () => {
       ws.send(
         JSON.stringify({
@@ -78,7 +54,7 @@ const Chat: React.FC = () => {
     };
 
     ws.onmessage = (event: MessageEvent) => {
-      console.log("Message from server: " + event);
+      console.log("接受到消息为: " + event);
     };
 
     ws.onclose = (event: CloseEvent) => {
@@ -88,7 +64,65 @@ const Chat: React.FC = () => {
     ws.onerror = (event: WebSocketEventMap["error"]) => {
       console.error("WebSocket error", event);
     };
+    //初始化获取好友列表
+    getUsers();
+
+    return () => {
+      ws.close();
+    };
+  }, [ws]);
+
+  const handleChange: ChangeEventHandler<HTMLInputElement> = (
+    e: ChangeEvent<HTMLInputElement>
+  ) => {
+    setMsg({
+      ...msg,
+      content: e.target.value,
+      username: JSON.parse(localStorage.getItem("imUsers")!).username,
+      target: clickedInfos?.username,
+    });
+  };
+
+  const sendMessage = () => {
+    const inputMsg = inputRef.current!.value;
+    if (inputMsg) {
+      //添加到视图上展示
+      const chatMessages = document.getElementById("chatMessages");
+      const lastMessageDiv = chatMessages!.lastChild;
+      const newMessageDiv = document.createElement("div");
+      newMessageDiv.className = "bubble me";
+      newMessageDiv.textContent = inputMsg;
+      if (lastMessageDiv) {
+        chatMessages!.insertBefore(newMessageDiv, lastMessageDiv.nextSibling);
+      } else {
+        chatMessages!.appendChild(newMessageDiv);
+      }
+      ws.send(JSON.stringify(msg));
+      inputRef.current!.value = "";
+    }
+  };
+
+  const handleKeyDown = (event: KeyboardEvent) => {
+    if(event.key === "Enter") {
+      sendMessage();
+    }
   }
+
+  useEffect(() => {
+    // 添加键盘事件监听器
+    window.addEventListener('keydown', handleKeyDown);
+  
+    // 返回清理函数，用于在组件销毁时移除键盘事件监听器
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }); 
+  //   const disconnectWebSocket = () => {
+  //     if (ws) {
+  //       ws.close();
+  //       console.log("WebSocket 主动关闭");
+  //     }
+  //   };
 
   /**
    * @description 获取好友列表
@@ -176,11 +210,13 @@ const Chat: React.FC = () => {
       .post(
         "/api1/member/friendsship/addFriend",
         {
-          firstUserId: "1791713272752271361",
+          firstUserId: "1787121357699596289",
         },
         {
           headers: {
-            Authorization: `Bearer ${"6248b583-41f2-4822-ae72-bcad5f02ab69"}`,
+            Authorization: `Bearer ${JSON.parse(
+              localStorage.getItem("token")!
+            )}`,
           },
         }
       )
@@ -210,23 +246,6 @@ const Chat: React.FC = () => {
       });
   };
 
-  useEffect(() => {
-    // 获取所有 <li> 元素
-    const listItems = document.querySelectorAll("li");
-
-    // 为每个 <li> 元素添加点击事件监听器
-    listItems.forEach((item) => {
-      item.addEventListener("click", selectUsers);
-    });
-
-    // 在组件卸载时,移除事件监听器
-    return () => {
-      listItems.forEach((item) => {
-        item.removeEventListener("click", selectUsers);
-      });
-    };
-  }, []);
-
   const selectUsers = async (e: any) => {
     const target = e.target as HTMLElement;
     let name = "";
@@ -234,6 +253,8 @@ const Chat: React.FC = () => {
     // 判断被点击的元素是什么,并获取名称
     if (target.classList.contains("name")) {
       name = target.textContent || "";
+    } else if (target.classList.contains("person")) {
+      name = target.innerText.split("\n")[0];
     } else {
       name =
         (target.parentElement as Element).querySelector(".name")?.textContent ||
@@ -257,13 +278,34 @@ const Chat: React.FC = () => {
         Message.error(err);
       });
     setClickedInfos(res!.data.data[0]);
+    const curIndex = list.findIndex((item) => item.username === name);
+    if (document.querySelector(".active")) {
+      document.querySelector(".active")!.classList.remove("active");
+    }
     document
-      .querySelector(".chat[data-chat=person2]")!
+      .querySelector(`.chat[data-chat=person1]`)!
       .classList.add("active-chat");
     document
-      .querySelector(".person[data-chat=person2]")!
+      .querySelector(`.person[data-chat=person${curIndex + 1}]`)!
       .classList.add("active");
   };
+
+  useEffect(() => {
+    // 获取所有 <li> 元素
+    const listItems = document.querySelectorAll("li");
+
+    // 为每个 <li> 元素添加点击事件监听器
+    listItems.forEach((item) => {
+      item.addEventListener("click", selectUsers);
+    });
+
+    // 在组件卸载时,移除事件监听器
+    return () => {
+      listItems.forEach((item) => {
+        item.removeEventListener("click", selectUsers);
+      });
+    };
+  }, []);
 
   const handleChangeToGetUsers: ChangeEventHandler<HTMLInputElement> =
     myThrottle(async (e: ChangeEvent<HTMLInputElement>) => {
@@ -284,9 +326,12 @@ const Chat: React.FC = () => {
             </div>
             <ul className="people" onClick={selectUsers}>
               {list.length > 0 ? (
-                list.map((item: any) => {
+                list.map((item: any, index: number) => {
                   return (
-                    <li className="person" data-chat="person2" key={item.id}>
+                    <li
+                      className="person"
+                      data-chat={`person${index + 1}`}
+                      key={item.id}>
                       <img
                         src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/382994/dog.png"
                         alt="img"
@@ -316,18 +361,20 @@ const Chat: React.FC = () => {
                   To: <span className="name">{clickedInfos?.username}</span>
                 </span>
               </div>
-              <div className="chat" data-chat="person2">
+              <div className="chat" data-chat="person1">
                 <div className="conversation-start">
                   <span>{dayjs(new Date()).format("HH:mm")}</span>
                 </div>
-                <div className="bubble you">Hello, can you hear me?</div>
-                <div className="bubble me">Are you serious?</div>
+                <div id="chatMessages" style={{ overflowY: "auto" }}>
+                  <div className="bubble you">Hello, can you hear me?</div>
+                  <div className="bubble me">Are you serious?</div>
+                </div>
               </div>
               <div className="write">
                 <a className="write-link attach"></a>
-                <input type="text" onChange={handleChange} />
+                <input type="text" onChange={handleChange} ref={inputRef} />
                 <a className="write-link smiley"></a>
-                <a className="write-link send" onClick={connectWebSocket}></a>
+                <a className="write-link send" onClick={sendMessage}></a>
               </div>
             </div>
           )}
