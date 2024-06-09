@@ -18,7 +18,7 @@ const routes: RouteObject[] = [
   {
     path: "/regist",
     element: <Regist />,
-  },
+  }
 ];
 
 export default routes;

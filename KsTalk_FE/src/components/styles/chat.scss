@@ -119,8 +119,9 @@ body {
             padding: 0;
             .person {
                 position: relative;
-                width: 100%;
+                width: 280px;
                 padding: 12px 10% 16px;
+                margin-bottom: 5px;
                 cursor: pointer;
                 background-color: var(--white);
                 &:after {
@@ -172,7 +173,7 @@ body {
                     padding-top: 13px;
                     border: 0;
                     background-color: var(--blue);
-                    width: calc(100% + 2px);
+                    // width: calc(100% + 2px);
                     padding-left: calc(10% + 1px);
                     span {
                         color: var(--white);

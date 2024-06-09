@@ -18,8 +18,10 @@ import {
   Avatar,
   Typography,
   Space,
+  Badge,
 } from "@arco-design/web-react";
 import dayjs from "dayjs";
+import NewFriends from "./NewFriends";
 import axios from "axios";
 import { myThrottle } from "@/utils";
 
@@ -28,6 +30,8 @@ const ws = new WebSocket("ws://109.206.247.99:8224");
 
 const Chat: React.FC = () => {
   const [list, setList] = useState<any[]>([]);
+  // const [friendSendList, setFriendSendList] = useState<any[]>([]);
+  const [friendAcceptList, setFriendAcceptList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [clickedInfos, setClickedInfos] = useState<any>({});
   const [rightVisibel, setRightVisibel] = useState<boolean>(false);
@@ -41,6 +45,8 @@ const Chat: React.FC = () => {
     type: 1,
   });
   const inputRef = useRef<HTMLInputElement>(null);
+  const [newFriendVisible, setNewFriendVisible] = useState(false);
+  const [unkonwnMsg, setUnkonwnMsg] = useState<any>({});
 
   useEffect(() => {
     ws.onopen = () => {
@@ -66,6 +72,9 @@ const Chat: React.FC = () => {
     };
     //初始化获取好友列表
     getUsers();
+
+    //获取未读消息列表
+    getUnknownMsg();
 
     return () => {
       ws.close();
@@ -103,20 +112,20 @@ const Chat: React.FC = () => {
   };
 
   const handleKeyDown = (event: KeyboardEvent) => {
-    if(event.key === "Enter") {
+    if (event.key === "Enter") {
       sendMessage();
     }
-  }
+  };
 
   useEffect(() => {
     // 添加键盘事件监听器
-    window.addEventListener('keydown', handleKeyDown);
-  
+    window.addEventListener("keydown", handleKeyDown);
+
     // 返回清理函数，用于在组件销毁时移除键盘事件监听器
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener("keydown", handleKeyDown);
     };
-  }); 
+  });
   //   const disconnectWebSocket = () => {
   //     if (ws) {
   //       ws.close();
@@ -135,7 +144,9 @@ const Chat: React.FC = () => {
         },
       })
       .then(({ data }) => {
-        setList(data.data.friendsList);
+        setList(data.data.friendsList); //TODO friSendList friAcceptList后期用
+        setFriendAcceptList(data.data.friAcceptList);  //新朋友
+        // setFriendSendList(data.data.friSendList); //已发请求
       })
       .catch((err) => {
         Message.error(err);
@@ -202,34 +213,10 @@ const Chat: React.FC = () => {
         Message.error(err);
       });
   };
-  /**
-   * @description 接受好友请求
-   */
-  const acceptUsers = () => {
-    axios
-      .post(
-        "/api1/member/friendsship/addFriend",
-        {
-          firstUserId: "1787121357699596289",
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${JSON.parse(
-              localStorage.getItem("token")!
-            )}`,
-          },
-        }
-      )
-      .then((res: any) => {
-        console.log(res);
-      })
-      .catch((err) => {
-        Message.error(err);
-      });
-  };
 
   /**
    * @description 获取用户未读的所有消息
+   * @returns content: string, resource: string | null, timestamp: number, type: number
    */
   const getUnknownMsg = () => {
     axios
@@ -239,16 +226,59 @@ const Chat: React.FC = () => {
         },
       })
       .then(({ data }) => {
-        console.log("未读消息", data.data);
+        const res = data.data.filter((msg: any) => msg.resource !== null); //删除脏数据
+        //转树形结构
+        let grouped: any = {};
+        res.forEach((msg: any) => {
+          let user = msg.resource;
+          if (!grouped[user]) {
+            grouped[user] = [];
+          }
+          grouped[user].push(msg);
+        });
+        setUnkonwnMsg(grouped);
       })
       .catch((err) => {
         Message.error(err);
       });
   };
 
+  /**
+   * @description 读取未读消息
+   * @params msgInfos:[]
+   */
+
+  const readUnknownMsg = (msgInfos: any) => {
+    axios
+      .post(
+        "/api1/msg/chat/readMsg",
+        {
+          msgInfos: msgInfos,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${JSON.parse(
+              localStorage.getItem("token")!
+            )}`,
+          },
+        }
+      )
+      .catch((err) => {
+        Message.error(err);
+      });
+  };
+
+  /**
+   *
+   * @description 选择好友
+   */
   const selectUsers = async (e: any) => {
     const target = e.target as HTMLElement;
     let name = "";
+    const curTarget = target.className === 'person' ? target : target.parentElement
+    if (curTarget?.nextSibling) {
+      curTarget.nextSibling.nodeType === 1 && curTarget.nextSibling.remove();
+    }
     setRightVisibel(true);
     // 判断被点击的元素是什么,并获取名称
     if (target.classList.contains("name")) {
@@ -260,6 +290,7 @@ const Chat: React.FC = () => {
         (target.parentElement as Element).querySelector(".name")?.textContent ||
         "";
     }
+    readUnknownMsg(unkonwnMsg[name]);
     const res = await axios
       .post(
         "/api1/member/user/info",
@@ -311,6 +342,7 @@ const Chat: React.FC = () => {
     myThrottle(async (e: ChangeEvent<HTMLInputElement>) => {
       checkUsers(e.target.value);
     }, 2000);
+
   return (
     <>
       <div className="wrapper">
@@ -327,26 +359,37 @@ const Chat: React.FC = () => {
             <ul className="people" onClick={selectUsers}>
               {list.length > 0 ? (
                 list.map((item: any, index: number) => {
+                  let count = 0;
+                  for (let msg in unkonwnMsg) {
+                    //for in 会遍历原型上的属性[只可枚举，可继承] Object.hasOwn() Object.prototype.hasOwnProperty.call()
+                    if (Object.hasOwn(unkonwnMsg, msg)) {
+                      if (msg === item.username) {
+                        count = unkonwnMsg[msg].length;
+                      }
+                    }
+                  }
                   return (
-                    <li
-                      className="person"
-                      data-chat={`person${index + 1}`}
-                      key={item.id}>
-                      <img
-                        src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/382994/dog.png"
-                        alt="img"
-                        className="avatar"
-                        // title='点击查看'
-                      />
-                      <span className="name">{item.username || "无名"}</span>
-                      <span className="time">
-                        {dayjs(item.lastLoginTime).format("HH:mm") ||
-                          dayjs(new Date()).format("HH:mm")}
-                      </span>
-                      <span className="preview">
-                        {item.signature || "这个人很懒，什么都没有留下"}
-                      </span>
-                    </li>
+                    <Badge count={count} maxCount={10} key={item.id}>
+                      <li
+                        className="person"
+                        data-chat={`person${index + 1}`}
+                        key={item.id}>
+                        <img
+                          src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/382994/dog.png"
+                          alt="img"
+                          className="avatar"
+                          // title='点击查看'
+                        />
+                        <span className="name">{item.username || "无名"}</span>
+                        <span className="time">
+                          {dayjs(item.lastLoginTime).format("HH:mm") ||
+                            dayjs(new Date()).format("HH:mm")}
+                        </span>
+                        <span className="preview">
+                          {item.signature || "这个人很懒，什么都没有留下"}
+                        </span>
+                      </li>
+                    </Badge>
                   );
                 })
               ) : (
@@ -366,8 +409,24 @@ const Chat: React.FC = () => {
                   <span>{dayjs(new Date()).format("HH:mm")}</span>
                 </div>
                 <div id="chatMessages" style={{ overflowY: "auto" }}>
-                  <div className="bubble you">Hello, can you hear me?</div>
-                  <div className="bubble me">Are you serious?</div>
+                  {unkonwnMsg[clickedInfos?.username] &&
+                    unkonwnMsg[clickedInfos?.username].map(
+                      (item: any, index: number) => {
+                        return (
+                          <div
+                            key={index}
+                            className={
+                              item.resource ===
+                              JSON.parse(localStorage.getItem("imUsers")!)
+                                .username
+                                ? "bubble me"
+                                : "bubble you"
+                            }>
+                            {item.content}
+                          </div>
+                        );
+                      }
+                    )}
                 </div>
               </div>
               <div className="write">
@@ -380,12 +439,10 @@ const Chat: React.FC = () => {
           )}
         </div>
       </div>
-      <Button onClick={acceptUsers} type="outline">
-        接受好友请求
+      <Button onClick={() => {setNewFriendVisible(true)}} type="primary">
+        查看新朋友
       </Button>
-      <Button onClick={getUnknownMsg} type="outline">
-        获取未读信息
-      </Button>
+      {newFriendVisible && <NewFriends list={friendAcceptList}/>}
       <Modal
         title="用户详情"
         visible={visibleUserInfos}
