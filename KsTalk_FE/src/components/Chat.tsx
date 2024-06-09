@@ -106,6 +106,7 @@ const Chat: React.FC = () => {
       } else {
         chatMessages!.appendChild(newMessageDiv);
       }
+      chatMessages!.scrollTop = chatMessages!.scrollHeight;
       ws.send(JSON.stringify(msg));
       inputRef.current!.value = "";
     }
@@ -290,7 +291,10 @@ const Chat: React.FC = () => {
         (target.parentElement as Element).querySelector(".name")?.textContent ||
         "";
     }
-    readUnknownMsg(unkonwnMsg[name]);
+
+    if(unkonwnMsg[name] && unkonwnMsg[name].constructor === Array){
+      readUnknownMsg(unkonwnMsg[name]);
+    }
     const res = await axios
       .post(
         "/api1/member/user/info",
@@ -369,7 +373,7 @@ const Chat: React.FC = () => {
                     }
                   }
                   return (
-                    <Badge count={count} maxCount={10} key={item.id}>
+                    <Badge count={count} maxCount={10} key={item.id} style={{height: 71}}>
                       <li
                         className="person"
                         data-chat={`person${index + 1}`}

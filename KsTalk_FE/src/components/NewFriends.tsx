@@ -38,6 +38,7 @@ export default function NewFriends({ list }: Props) {
 
   const acceptUser = (id: string) => {
     acceptUsers(id);
+    deleteUser(id)
   };
 
   const deleteUser = (id: string) => {
@@ -55,7 +56,7 @@ export default function NewFriends({ list }: Props) {
           <List.Item.Meta
             avatar={
               <Avatar shape="square" style={{ backgroundColor: "#FF7D00" }}>
-                Z
+                {item.username.charAt(0).toUpperCase()}
               </Avatar>
             }
             title={item.username}
