@@ -59,9 +59,23 @@ const Chat: React.FC = () => {
       );
     };
 
-    ws.onmessage = (event: MessageEvent) => {
-      console.log("接受到消息为: " + event);
-    };
+    ws.onmessage = (event: WebSocketEventMap['message']) => {
+        console.log("接受到消息为: " + event.data.message);
+
+        //添加到视图上展示
+        const chatMessages = document.getElementById("chatMessages");
+        const lastMessageDiv = chatMessages!.lastChild;
+        const newMessageDiv = document.createElement("div");
+        newMessageDiv.className = "bubble you";
+        newMessageDiv.textContent = event.data.message;
+        if (lastMessageDiv) {
+          chatMessages!.insertBefore(newMessageDiv, lastMessageDiv.nextSibling);
+        } else {
+          chatMessages!.appendChild(newMessageDiv);
+        }
+        chatMessages!.scrollTop = chatMessages!.scrollHeight;
+        inputRef.current!.value = "";
+      }
 
     ws.onclose = (event: CloseEvent) => {
       console.log("WebSocket disconnected", event);
@@ -108,6 +122,7 @@ const Chat: React.FC = () => {
       }
       chatMessages!.scrollTop = chatMessages!.scrollHeight;
       ws.send(JSON.stringify(msg));
+      getUnknownMsg();
       inputRef.current!.value = "";
     }
   };
