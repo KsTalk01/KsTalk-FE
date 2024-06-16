@@ -74,7 +74,8 @@ const Chat: React.FC = () => {
         ...unkonwnMsg,
         [curUser]: unkonwnMsg[curUser].concat(JSON.parse(event.data)),
       };
-      setUnkonwnMsg((pre:any) => ({...pre,...updateObject}))
+      setUnkonwnMsg(updateObject);
+      console.log(unkonwnMsg)
       // setUnkonwnMsg({...unkonwnMsg, [JSON.parse(event.data).name]: [JSON.parse(event.data)]});
 
       //添加到视图上展示
@@ -470,7 +471,7 @@ const Chat: React.FC = () => {
                   <span>{dayjs(new Date()).format("HH:mm")}</span>
                 </div>
                 <div id="chatMessages" style={{ overflowY: "auto" }}>
-                  {unkonwnMsg[clickedInfos?.username].length > 0 &&
+                  {unkonwnMsg[clickedInfos?.username] &&
                     unkonwnMsg[clickedInfos?.username].map(
                       (item: any, index: number) => {
                         return (
