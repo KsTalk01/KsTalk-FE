@@ -265,11 +265,11 @@ const Chat: React.FC = () => {
         },
       })
       .then(({ data }) => {
-        const res = data.data.filter((msg: any) => msg.resource !== null); //删除脏数据
+        const res = data.data.filter((msg: any) => msg.name !== null); //删除脏数据
         //转树形结构
         let grouped: any = {};
         res.forEach((msg: any) => {
-          let user = msg.resource;
+          let user = msg.name;
           if (!grouped[user]) {
             grouped[user] = [];
           }
@@ -458,13 +458,13 @@ const Chat: React.FC = () => {
                           <div
                             key={index}
                             className={
-                              item.resource ===
+                              item.name ===
                               JSON.parse(localStorage.getItem("imUsers")!)
                                 .username
                                 ? "bubble me"
                                 : "bubble you"
                             }>
-                            {item.content}
+                            {item.message}
                           </div>
                         );
                       }
