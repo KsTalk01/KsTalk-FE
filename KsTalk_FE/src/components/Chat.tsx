@@ -165,7 +165,7 @@ const Chat: React.FC = () => {
       })
       .then(({ data }) => {
         setList(data.data.friendsList); //TODO friSendList friAcceptList后期用
-        setFriendAcceptList(data.data.friAcceptList);  //新朋友
+        // setFriendAcceptList(data.data.friAcceptList);  //新朋友
         // setFriendSendList(data.data.friSendList); //已发请求
       })
       .catch((err) => {
@@ -183,8 +183,9 @@ const Chat: React.FC = () => {
         },
       })
       .then(({ data }) => {
-        setList(data.data.friendsList); //TODO friSendList friAcceptList后期用
-        setFriendAcceptList(data.data.friAcceptList);  //新朋友
+        setList(data.data.friendsList);
+        setFriendAcceptList([...friendAcceptList,...data.data.friAcceptList]);  //新朋友
+        setNewFriendVisible(true)
         // setFriendSendList(data.data.friSendList); //已发请求
       })
       .catch((err) => {
@@ -265,11 +266,11 @@ const Chat: React.FC = () => {
         },
       })
       .then(({ data }) => {
-        const res = data.data.filter((msg: any) => msg.resource !== null); //删除脏数据
+        const res = data.data.filter((msg: any) => msg.name !== null); //删除脏数据
         //转树形结构
         let grouped: any = {};
         res.forEach((msg: any) => {
-          let user = msg.resource;
+          let user = msg.name;
           if (!grouped[user]) {
             grouped[user] = [];
           }
@@ -313,7 +314,6 @@ const Chat: React.FC = () => {
    */
   const selectUsers = async (e: any) => {
     const target = e.target as HTMLElement;
-    debugger
     let name = "";
     const curTarget = (target.className === 'person' || target.className === 'person active') ? target : target.parentElement
     if (curTarget?.nextSibling) {
@@ -459,13 +459,13 @@ const Chat: React.FC = () => {
                           <div
                             key={index}
                             className={
-                              item.resource ===
+                              item.name ===
                               JSON.parse(localStorage.getItem("imUsers")!)
                                 .username
                                 ? "bubble me"
                                 : "bubble you"
                             }>
-                            {item.content}
+                            {item.message}
                           </div>
                         );
                       }
@@ -483,8 +483,8 @@ const Chat: React.FC = () => {
         </div>
       </div>
       <Button onClick={() => {
-        setNewFriendVisible(true)
-        addNewUsers()}} type="primary">
+        addNewUsers()
+        }} type="primary">
         查看新朋友
       </Button>
       {newFriendVisible && <NewFriends list={friendAcceptList}/>}

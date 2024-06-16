@@ -1,6 +1,6 @@
 import { List, Avatar, Message } from "@arco-design/web-react";
 import "./styles/newFriends.module.scss";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from 'axios'
 
 type Props = {
@@ -8,7 +8,12 @@ type Props = {
 };
 
 export default function NewFriends({ list }: Props) {
+  debugger
   const [friList, setFriList] = useState(list)
+
+  useEffect(()=>{
+    setFriList(list)
+  }, [list])
 
   /**
    * @description 接受好友请求
@@ -47,6 +52,7 @@ export default function NewFriends({ list }: Props) {
     Message.warning('删除成功')
   };
   return (
+    friList.length > 0 && (
     <List
       className="list-demo-actions"
       style={{ width: 400, color: "#fff" }}
@@ -68,6 +74,6 @@ export default function NewFriends({ list }: Props) {
           </div>
         </List.Item>
       )}
-    />
+    />)
   );
 }
