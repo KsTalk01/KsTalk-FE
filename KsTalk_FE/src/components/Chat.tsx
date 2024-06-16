@@ -290,11 +290,12 @@ const Chat: React.FC = () => {
    */
   const selectUsers = async (e: any) => {
     const target = e.target as HTMLElement;
+    debugger
     let name = "";
-    const curTarget = target.className === 'person' ? target : target.parentElement
-    if (curTarget?.nextSibling) {
-      curTarget.nextSibling.nodeType === 1 && curTarget.nextSibling.remove();
-    }
+    // const curTarget = target.className === 'person' ? target : target.parentElement
+    // if (curTarget?.nextSibling) {
+    //   curTarget.nextSibling.nodeType === 1 && curTarget.nextSibling.remove();
+    // }
     setRightVisibel(true);
     // 判断被点击的元素是什么,并获取名称
     if (target.classList.contains("name")) {
