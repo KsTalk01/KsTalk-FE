@@ -182,7 +182,7 @@ const Chat: React.FC = () => {
           Authorization: `Bearer ${JSON.parse(localStorage.getItem("token")!)}`,
         },
       })
-      .then(async ({ data }) => {
+      .then(({ data }) => {
         setList(data.data.friendsList);
         setFriendAcceptList([...friendAcceptList,...data.data.friAcceptList]);  //新朋友
         setNewFriendVisible(true)
