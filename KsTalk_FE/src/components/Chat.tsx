@@ -64,7 +64,7 @@ const Chat: React.FC = () => {
 
         //添加到视图上展示
         const chatMessages = document.getElementById("chatMessages");
-        const lastMessageDiv = chatMessages!.lastChild;
+        const lastMessageDiv = chatMessages?.lastChild;
         const newMessageDiv = document.createElement("div");
         newMessageDiv.className = "bubble you";
         newMessageDiv.textContent = event.data.message;
@@ -107,11 +107,12 @@ const Chat: React.FC = () => {
   };
 
   const sendMessage = () => {
+    // debugger
     const inputMsg = inputRef.current!.value;
     if (inputMsg) {
       //添加到视图上展示
       const chatMessages = document.getElementById("chatMessages");
-      const lastMessageDiv = chatMessages!.lastChild;
+      const lastMessageDiv = chatMessages?.lastChild;
       const newMessageDiv = document.createElement("div");
       newMessageDiv.className = "bubble me";
       newMessageDiv.textContent = inputMsg;
@@ -122,7 +123,6 @@ const Chat: React.FC = () => {
       }
       chatMessages!.scrollTop = chatMessages!.scrollHeight;
       ws.send(JSON.stringify(msg));
-      getUnknownMsg();
       inputRef.current!.value = "";
     }
   };
