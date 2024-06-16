@@ -74,7 +74,7 @@ const Chat: React.FC = () => {
         ...unkonwnMsg,
         [curUser]: unkonwnMsg[curUser].concat(JSON.parse(event.data)),
       };
-      setUnkonwnMsg(updateObject);
+      setUnkonwnMsg((pre:any) => ({...pre,...updateObject}))
       // setUnkonwnMsg({...unkonwnMsg, [JSON.parse(event.data).name]: [JSON.parse(event.data)]});
 
       //添加到视图上展示
