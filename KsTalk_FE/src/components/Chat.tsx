@@ -73,8 +73,12 @@ const Chat: React.FC = () => {
         } else {
           chatMessages!.appendChild(newMessageDiv);
         }
-        chatMessages!.scrollTop = chatMessages!.scrollHeight;
-        inputRef.current!.value = "";
+        if(chatMessages) {
+          chatMessages!.scrollTop = chatMessages!.scrollHeight;
+        }
+        // chatMessages!.scrollTop = chatMessages!.scrollHeight;
+        // inputRef.current!.value = "";
+        if(inputRef.current) inputRef.current!.value = "";
       }
 
     ws.onclose = (event: CloseEvent) => {
@@ -155,6 +159,25 @@ const Chat: React.FC = () => {
   const getUsers = () => {
     axios
       .get("/api1/member/friendsship/list", {
+        headers: {
+          Authorization: `Bearer ${JSON.parse(localStorage.getItem("token")!)}`,
+        },
+      })
+      .then(({ data }) => {
+        setList(data.data.friendsList); //TODO friSendList friAcceptList后期用
+        setFriendAcceptList(data.data.friAcceptList);  //新朋友
+        // setFriendSendList(data.data.friSendList); //已发请求
+      })
+      .catch((err) => {
+        Message.error(err);
+      });
+  };
+  /**
+   * @description 查看新好友
+   */
+  const addNewUsers = () => {
+    axios
+      .get("/api1/member/friendsship/friReqList", {
         headers: {
           Authorization: `Bearer ${JSON.parse(localStorage.getItem("token")!)}`,
         },
@@ -292,10 +315,10 @@ const Chat: React.FC = () => {
     const target = e.target as HTMLElement;
     debugger
     let name = "";
-    // const curTarget = target.className === 'person' ? target : target.parentElement
-    // if (curTarget?.nextSibling) {
-    //   curTarget.nextSibling.nodeType === 1 && curTarget.nextSibling.remove();
-    // }
+    const curTarget = (target.className === 'person' || target.className === 'person active') ? target : target.parentElement
+    if (curTarget?.nextSibling) {
+      curTarget.nextSibling.nodeType === 1 && curTarget.nextSibling.remove();
+    }
     setRightVisibel(true);
     // 判断被点击的元素是什么,并获取名称
     if (target.classList.contains("name")) {
@@ -459,7 +482,9 @@ const Chat: React.FC = () => {
           )}
         </div>
       </div>
-      <Button onClick={() => {setNewFriendVisible(true)}} type="primary">
+      <Button onClick={() => {
+        setNewFriendVisible(true)
+        addNewUsers()}} type="primary">
         查看新朋友
       </Button>
       {newFriendVisible && <NewFriends list={friendAcceptList}/>}
