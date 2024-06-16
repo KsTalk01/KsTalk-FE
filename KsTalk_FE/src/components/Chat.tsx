@@ -470,7 +470,7 @@ const Chat: React.FC = () => {
                   <span>{dayjs(new Date()).format("HH:mm")}</span>
                 </div>
                 <div id="chatMessages" style={{ overflowY: "auto" }}>
-                  {unkonwnMsg[clickedInfos?.username] &&
+                  {unkonwnMsg[clickedInfos?.username].length > 0 &&
                     unkonwnMsg[clickedInfos?.username].map(
                       (item: any, index: number) => {
                         return (
