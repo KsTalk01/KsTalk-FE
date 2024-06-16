@@ -313,7 +313,6 @@ const Chat: React.FC = () => {
    */
   const selectUsers = async (e: any) => {
     const target = e.target as HTMLElement;
-    debugger
     let name = "";
     const curTarget = (target.className === 'person' || target.className === 'person active') ? target : target.parentElement
     if (curTarget?.nextSibling) {

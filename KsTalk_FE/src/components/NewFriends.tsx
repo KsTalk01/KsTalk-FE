@@ -47,6 +47,7 @@ export default function NewFriends({ list }: Props) {
     Message.warning('删除成功')
   };
   return (
+    friList.length > 0 && (
     <List
       className="list-demo-actions"
       style={{ width: 400, color: "#fff" }}
@@ -68,6 +69,6 @@ export default function NewFriends({ list }: Props) {
           </div>
         </List.Item>
       )}
-    />
+    />)
   );
 }
