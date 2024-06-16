@@ -1,6 +1,6 @@
 import { List, Avatar, Message } from "@arco-design/web-react";
 import "./styles/newFriends.module.scss";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from 'axios'
 
 type Props = {
@@ -9,6 +9,10 @@ type Props = {
 
 export default function NewFriends({ list }: Props) {
   const [friList, setFriList] = useState(list)
+
+  useEffect(()=>{
+    setFriList(list)
+  }, [list])
 
   /**
    * @description 接受好友请求

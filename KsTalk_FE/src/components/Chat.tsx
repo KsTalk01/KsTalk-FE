@@ -165,7 +165,7 @@ const Chat: React.FC = () => {
       })
       .then(({ data }) => {
         setList(data.data.friendsList); //TODO friSendList friAcceptList后期用
-        setFriendAcceptList(data.data.friAcceptList);  //新朋友
+        // setFriendAcceptList(data.data.friAcceptList);  //新朋友
         // setFriendSendList(data.data.friSendList); //已发请求
       })
       .catch((err) => {
@@ -182,9 +182,9 @@ const Chat: React.FC = () => {
           Authorization: `Bearer ${JSON.parse(localStorage.getItem("token")!)}`,
         },
       })
-      .then(({ data }) => {
-        setList(data.data.friendsList); //TODO friSendList friAcceptList后期用
-        setFriendAcceptList(data.data.friAcceptList);  //新朋友
+      .then(async ({ data }) => {
+        setList(data.data.friendsList);
+        setFriendAcceptList([...friendAcceptList,...data.data.friAcceptList]);  //新朋友
         // setFriendSendList(data.data.friSendList); //已发请求
       })
       .catch((err) => {
@@ -482,8 +482,9 @@ const Chat: React.FC = () => {
         </div>
       </div>
       <Button onClick={() => {
+        addNewUsers()
         setNewFriendVisible(true)
-        addNewUsers()}} type="primary">
+        }} type="primary">
         查看新朋友
       </Button>
       {newFriendVisible && <NewFriends list={friendAcceptList}/>}
