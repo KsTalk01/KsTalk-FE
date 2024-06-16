@@ -185,6 +185,7 @@ const Chat: React.FC = () => {
       .then(async ({ data }) => {
         setList(data.data.friendsList);
         setFriendAcceptList([...friendAcceptList,...data.data.friAcceptList]);  //新朋友
+        setNewFriendVisible(true)
         // setFriendSendList(data.data.friSendList); //已发请求
       })
       .catch((err) => {
@@ -483,7 +484,6 @@ const Chat: React.FC = () => {
       </div>
       <Button onClick={() => {
         addNewUsers()
-        setNewFriendVisible(true)
         }} type="primary">
         查看新朋友
       </Button>

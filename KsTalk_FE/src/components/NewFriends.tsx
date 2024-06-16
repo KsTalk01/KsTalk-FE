@@ -8,6 +8,7 @@ type Props = {
 };
 
 export default function NewFriends({ list }: Props) {
+  debugger
   const [friList, setFriList] = useState(list)
 
   useEffect(()=>{
