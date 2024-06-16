@@ -60,14 +60,14 @@ const Chat: React.FC = () => {
     };
 
     ws.onmessage = (event: WebSocketEventMap['message']) => {
-        console.log("接受到消息为: " + event.data.message);
+        console.log("接受到消息为: " + event.data);
 
         //添加到视图上展示
         const chatMessages = document.getElementById("chatMessages");
         const lastMessageDiv = chatMessages?.lastChild;
         const newMessageDiv = document.createElement("div");
         newMessageDiv.className = "bubble you";
-        newMessageDiv.textContent = event.data.message;
+        newMessageDiv.textContent = JSON.parse(event.data).message;
         if (lastMessageDiv) {
           chatMessages!.insertBefore(newMessageDiv, lastMessageDiv.nextSibling);
         } else {
