@@ -48,6 +48,14 @@ const Chat: React.FC = () => {
   const [newFriendVisible, setNewFriendVisible] = useState(false);
   const [unkonwnMsg, setUnkonwnMsg] = useState<any>({});
 
+  useEffect(()=>{
+    //初始化获取好友列表
+    getUsers();
+
+    //获取未读消息列表
+    getUnknownMsg();
+  }, [])
+
   useEffect(() => {
     ws.onopen = () => {
       ws.send(
@@ -59,27 +67,34 @@ const Chat: React.FC = () => {
       );
     };
 
-    ws.onmessage = (event: WebSocketEventMap['message']) => {
-        console.log("接受到消息为: " + event.data);
+    ws.onmessage = (event: WebSocketEventMap["message"]) => {
+      console.log("接受到消息为: " + event.data);
+      const curUser = JSON.parse(event.data).name;
+      const updateObject = {
+        ...unkonwnMsg,
+        [curUser]: unkonwnMsg[curUser].concat(JSON.parse(event.data)),
+      };
+      setUnkonwnMsg(updateObject);
+      // setUnkonwnMsg({...unkonwnMsg, [JSON.parse(event.data).name]: [JSON.parse(event.data)]});
 
-        //添加到视图上展示
-        const chatMessages = document.getElementById("chatMessages");
-        const lastMessageDiv = chatMessages?.lastChild;
-        const newMessageDiv = document.createElement("div");
-        newMessageDiv.className = "bubble you";
-        newMessageDiv.textContent = JSON.parse(event.data).message;
-        if (lastMessageDiv) {
-          chatMessages!.insertBefore(newMessageDiv, lastMessageDiv.nextSibling);
-        } else {
-          chatMessages!.appendChild(newMessageDiv);
-        }
-        if(chatMessages) {
-          chatMessages!.scrollTop = chatMessages!.scrollHeight;
-        }
-        // chatMessages!.scrollTop = chatMessages!.scrollHeight;
-        // inputRef.current!.value = "";
-        if(inputRef.current) inputRef.current!.value = "";
+      //添加到视图上展示
+      const chatMessages = document.getElementById("chatMessages");
+      // const lastMessageDiv = chatMessages?.lastChild;
+      // const newMessageDiv = document.createElement("div");
+      // newMessageDiv.className = "bubble you";
+      // newMessageDiv.textContent = JSON.parse(event.data).message;
+      // if (lastMessageDiv) {
+      //   chatMessages!.insertBefore(newMessageDiv, lastMessageDiv.nextSibling);
+      // } else {
+      //   chatMessages!.appendChild(newMessageDiv);
+      // }
+      if (chatMessages) {
+        chatMessages!.scrollTop = chatMessages!.scrollHeight;
       }
+      // chatMessages!.scrollTop = chatMessages!.scrollHeight;
+      // inputRef.current!.value = "";
+      if (inputRef.current) inputRef.current!.value = "";
+    };
 
     ws.onclose = (event: CloseEvent) => {
       console.log("WebSocket disconnected", event);
@@ -88,11 +103,6 @@ const Chat: React.FC = () => {
     ws.onerror = (event: WebSocketEventMap["error"]) => {
       console.error("WebSocket error", event);
     };
-    //初始化获取好友列表
-    getUsers();
-
-    //获取未读消息列表
-    getUnknownMsg();
 
     return () => {
       ws.close();
@@ -184,8 +194,8 @@ const Chat: React.FC = () => {
       })
       .then(({ data }) => {
         setList(data.data.friendsList);
-        setFriendAcceptList([...friendAcceptList,...data.data.friAcceptList]);  //新朋友
-        setNewFriendVisible(true)
+        setFriendAcceptList([...friendAcceptList, ...data.data.friAcceptList]); //新朋友
+        setNewFriendVisible(true);
         // setFriendSendList(data.data.friSendList); //已发请求
       })
       .catch((err) => {
@@ -313,9 +323,13 @@ const Chat: React.FC = () => {
    * @description 选择好友
    */
   const selectUsers = async (e: any) => {
+    setRightVisibel(false);
     const target = e.target as HTMLElement;
     let name = "";
-    const curTarget = (target.className === 'person' || target.className === 'person active') ? target : target.parentElement
+    const curTarget =
+      target.className === "person" || target.className === "person active"
+        ? target
+        : target.parentElement;
     if (curTarget?.nextSibling) {
       curTarget.nextSibling.nodeType === 1 && curTarget.nextSibling.remove();
     }
@@ -331,7 +345,7 @@ const Chat: React.FC = () => {
         "";
     }
 
-    if(unkonwnMsg[name] && unkonwnMsg[name].constructor === Array){
+    if (unkonwnMsg[name] && unkonwnMsg[name].constructor === Array) {
       readUnknownMsg(unkonwnMsg[name]);
     }
     const res = await axios
@@ -412,7 +426,11 @@ const Chat: React.FC = () => {
                     }
                   }
                   return (
-                    <Badge count={count} maxCount={10} key={item.id} style={{height: 71}}>
+                    <Badge
+                      count={count}
+                      maxCount={10}
+                      key={item.id}
+                      style={{ height: 71 }}>
                       <li
                         className="person"
                         data-chat={`person${index + 1}`}
@@ -482,12 +500,14 @@ const Chat: React.FC = () => {
           )}
         </div>
       </div>
-      <Button onClick={() => {
-        addNewUsers()
-        }} type="primary">
+      <Button
+        onClick={() => {
+          addNewUsers();
+        }}
+        type="primary">
         查看新朋友
       </Button>
-      {newFriendVisible && <NewFriends list={friendAcceptList}/>}
+      {newFriendVisible && <NewFriends list={friendAcceptList} />}
       <Modal
         title="用户详情"
         visible={visibleUserInfos}
