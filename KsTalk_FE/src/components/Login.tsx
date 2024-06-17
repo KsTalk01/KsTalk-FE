@@ -136,11 +136,15 @@ const Login: React.FC = () => {
                 })
                   .then((res) => {
                     const infos  = res.data
-                    localStorage.setItem("token", JSON.stringify(infos.data.token));
-                    localStorage.setItem("refreshToken", JSON.stringify(infos.data.refreshToken));
-                    localStorage.setItem("imUsers", JSON.stringify(infos.data));
-                    Message.success("登陆成功");
-                    navigate("/");
+                    if(infos.code!=200){
+                      Message.error(infos.msg);
+                    }else{
+                      localStorage.setItem("token", JSON.stringify(infos.data.token));
+                      localStorage.setItem("refreshToken", JSON.stringify(infos.data.refreshToken));
+                      localStorage.setItem("imUsers", JSON.stringify(infos.data));
+                      Message.success("登陆成功");
+                      navigate("/");
+                    }
                   })
                   .catch((err) => {
                     Message.error(err);

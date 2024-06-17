@@ -94,8 +94,13 @@ const Login: React.FC = () => {
                   url: "/api1/member/user/regist",
                   data: form.getFieldsValue(),
                 }).then((res) => {
-                  console.log(res)
-                  Message.success("注册成功,去登录吧");
+                  // console.log(res)
+                  if(res.data.code!=200){
+                    Message.error(res.data.msg);
+                  }else{
+                    Message.success(res.data.msg);
+                  }
+                  
                 })
               } catch (e) {
                 Message.error("注册失败");

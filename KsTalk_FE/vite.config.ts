@@ -2,7 +2,12 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 export default defineConfig({
+  base:'/ksfe/',
   plugins: [react()],
+  build: {
+    outDir: 'dist',  // 输出目录
+  },
+  root: '.',  // 项目根目录
   server:{
     proxy:{
       '/api1': {
