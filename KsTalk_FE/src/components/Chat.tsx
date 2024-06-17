@@ -72,7 +72,7 @@ const Chat: React.FC = () => {
       const curUser = JSON.parse(event.data).name;
       const eventData = JSON.parse(event.data);
       // 更新 unkownMsg 状态
-      setUnkonwnMsg(prevState => {
+      setUnkonwnMsg((prevState: { [x: string]: never[]; }) => {
         // 如果 curUser 不存在，初始化为空数组
         const curUserMessages = prevState[curUser] || [];
         return {
@@ -153,7 +153,7 @@ const Chat: React.FC = () => {
       // }
       // chatMessages!.scrollTop = chatMessages!.scrollHeight;
        // 更新 unkownMsg 状态
-       setUnkonwnMsg(prevState => ({
+       setUnkonwnMsg((prevState: { [x: string]: any; }) => ({
         ...prevState,
         [clickedInfos?.username]: [...(prevState[clickedInfos?.username] || []), newMessage],
       }));
