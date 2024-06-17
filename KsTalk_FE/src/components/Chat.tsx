@@ -70,12 +70,22 @@ const Chat: React.FC = () => {
     ws.onmessage = (event: WebSocketEventMap["message"]) => {
       console.log("接受到消息为: " + event.data);
       const curUser = JSON.parse(event.data).name;
-      const updateObject = {
-        ...unkonwnMsg,
-        [curUser]: unkonwnMsg[curUser].concat(JSON.parse(event.data)),
-      };
-      setUnkonwnMsg(updateObject);
-      console.log(unkonwnMsg)
+      const eventData = JSON.parse(event.data);
+      // 更新 unkownMsg 状态
+      setUnkonwnMsg(prevState => {
+        // 如果 curUser 不存在，初始化为空数组
+        const curUserMessages = prevState[curUser] || [];
+        return {
+          ...prevState,
+          [curUser]: [...curUserMessages, eventData]
+        };
+      });
+      // const updateObject = {
+      //   ...unkonwnMsg,
+      //   [curUser]: unkonwnMsg[curUser].concat(JSON.parse(event.data))
+      // };
+      // setUnkonwnMsg(updateObject);
+      // console.log(unkonwnMsg)
       // setUnkonwnMsg({...unkonwnMsg, [JSON.parse(event.data).name]: [JSON.parse(event.data)]});
 
       //添加到视图上展示
@@ -125,18 +135,28 @@ const Chat: React.FC = () => {
     // debugger
     const inputMsg = inputRef.current!.value;
     if (inputMsg) {
+      // 构建新消息对象
+      const newMessage = {
+        name: JSON.parse(localStorage.getItem("imUsers")!).username, // 发送者名称，假设从本地存储中获取
+        message: inputMsg, // 消息内容
+      };
       //添加到视图上展示
-      const chatMessages = document.getElementById("chatMessages");
-      const lastMessageDiv = chatMessages?.lastChild;
-      const newMessageDiv = document.createElement("div");
-      newMessageDiv.className = "bubble me";
-      newMessageDiv.textContent = inputMsg;
-      if (lastMessageDiv) {
-        chatMessages!.insertBefore(newMessageDiv, lastMessageDiv.nextSibling);
-      } else {
-        chatMessages!.appendChild(newMessageDiv);
-      }
-      chatMessages!.scrollTop = chatMessages!.scrollHeight;
+      // const chatMessages = document.getElementById("chatMessages");
+      // const lastMessageDiv = chatMessages?.lastChild;
+      // const newMessageDiv = document.createElement("div");
+      // newMessageDiv.className = "bubble me";
+      // newMessageDiv.textContent = inputMsg;
+      // if (lastMessageDiv) {
+      //   chatMessages!.insertBefore(newMessageDiv, lastMessageDiv.nextSibling);
+      // } else {
+      //   chatMessages!.appendChild(newMessageDiv);
+      // }
+      // chatMessages!.scrollTop = chatMessages!.scrollHeight;
+       // 更新 unkownMsg 状态
+       setUnkonwnMsg(prevState => ({
+        ...prevState,
+        [clickedInfos?.username]: [...(prevState[clickedInfos?.username] || []), newMessage],
+      }));
       ws.send(JSON.stringify(msg));
       inputRef.current!.value = "";
     }
